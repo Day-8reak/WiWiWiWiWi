@@ -136,6 +136,33 @@ def dijkstra(graph, source, k):
     return distance, path
 
 
+def bellman_ford(graph, source, k):
+    dist = {}
+    paths = {}
+    relax_count = {}
+
+    for node in graph.adj:
+        dist[node] = float('inf')
+        paths[node] = []
+        relax_count[node] = 0
+
+    dist[source] = 0
+    paths[source] = [source]
+    
+    for _ in range(len(graph.adj) - 1):
+        updated = False
+        for u in graph.adj:
+            for v in graph.adj[u]:
+                weight = graph.w(u, v)
+                if dist[u] + weight < dist[v] and relax_count[v] < k:
+                    dist[v] = dist[u] + weight
+                    paths[v] = paths[u] + [v]
+                    relax_count[v] += 1
+                    updated = True
+        if not updated:
+            break
+    
+    return dist, paths
 
 
 
@@ -174,6 +201,16 @@ def all_pairs_dijkstra(graph, k):
     return all_distances, all_paths
 
 
+def all_pairs_bf(graph, k):
+    all_distances = {}
+    all_paths = {}
+
+    for source in graph.adj:
+        distances, paths = bellman_ford(graph, source, k)
+        all_distances[source] = distances
+        all_paths[source] = paths
+
+    return all_distances, all_paths
 
 
 G = DirectedWeightedGraph()
@@ -187,6 +224,17 @@ G.add_edge(1, 3, 1)
 G.add_edge(2, 3, 5)
 
 all_distances, all_paths = all_pairs_dijkstra(G, k=2)
+
+print("All-Pairs Distances:")
+for u in all_distances:
+    print(f"From {u}: {all_distances[u]}")
+
+print("\nAll-Pairs Paths:")
+for u in all_paths:
+    print(f"From {u}: {all_paths[u]}")
+
+
+all_distances, all_paths = all_pairs_bf(G, k=2)
 
 print("All-Pairs Distances:")
 for u in all_distances:
