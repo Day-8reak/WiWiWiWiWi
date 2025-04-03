@@ -477,13 +477,13 @@ def experiment_space_vs_edges_fixed_nodes():
 
 
 # Run all experiments
-#experiment_variable_edges_fixed_nodes()
-#experiment_small_vs_large_graphs()
-#experiment_space_vs_nodes_fixed_edges()
-#experiment_space_vs_edges_fixed_nodes()
+experiment_variable_edges_fixed_nodes()
+experiment_small_vs_large_graphs()
+experiment_space_vs_nodes_fixed_edges()
+experiment_space_vs_edges_fixed_nodes()
 experiment_accuracy_vs_k()
 
-
+"""
 G = DirectedWeightedGraph()
 for i in range(5):
     G.add_node(i)
@@ -495,3 +495,4 @@ d2, _ = dijkstra(G, 0, 4)
 
 print("Distances with k=1:", d1)
 print("Distances with k=4:", d2)
+"""
