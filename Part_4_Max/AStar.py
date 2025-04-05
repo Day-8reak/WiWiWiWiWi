@@ -1,6 +1,12 @@
 #TO-DO:
 import heapq
 import random
+import math
+import numpy as np
+import timeit
+import matplotlib.pyplot as plt
+import time
+
 """
 1. Implement a class for directed weighted graph
 - We're gonna make it a adjacency matrix list to represent all the relationships, because it's easier to implement
@@ -70,11 +76,11 @@ def generate_random_graph(num_nodes, num_edges, max_edge_weight=100, min_edge_we
 
 
 
-def heuristic_gen(G, source, destination): # for now we'll just use a random heuristic
+def heuristic_gen(G, source, destination, min, max): # for now we'll just use a random heuristic
     # but this can be improved in the future,
     heuristic = []
     for i in range(G.number_of_nodes()):
-        heuristic.append(random.randint(0, 100))
+        heuristic.append(random.randint(min , max))
     return heuristic
 
 
@@ -136,6 +142,24 @@ def reconstruct_path(predecessors, source, destination):
     return []
 
 
+
+def test_A_Star():
+
+    for i in range(100):
+        graph = generate_random_graph(300, 100, 1000, 1)
+        heuristic = heuristic_gen(graph, 0, 4)
+    # Create a random graph with 5 nodes and 10 edges
+    graph = generate_random_graph(5, 10, 100, 1)
+    
+    # Generate a random heuristic for the graph
+    heuristic = heuristic_gen(graph, 0, 4)
+    
+    # Run A* algorithm from node 0 to node 4
+    predecessors, path = A_Star(graph, 0, 4, heuristic)
+    
+    print("Predecessors:", predecessors)
+    print("Path from 0 to 4:", path)
+    print("Graph nodes:", graph.adj.keys())
 
 test_graph = generate_random_graph(5, 10, 100, 1)
 print("Graph nodes:", test_graph.adj.keys())
