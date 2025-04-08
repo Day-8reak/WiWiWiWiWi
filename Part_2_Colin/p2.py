@@ -14,36 +14,48 @@ import Helper.graphs as graphs
 # Dijkstra's with relaxation limit k
 def dijkstra(graph, source, k):
     distance = {}
-    path = {}
+    predecessor = {}
     relax_count = {}
 
     for node in graph.adj:
         distance[node] = float('inf')
-        path[node] = []
+        predecessor[node] = None
         relax_count[node] = 0
 
     distance[source] = 0
-    path[source] = [source]
 
     heap = graphs.MinHeap()
-    heap.push((0, source, [source]))
+    heap.push((0, source))
 
     while not heap.is_empty():
-        dist_u, u, path_u = heap.pop()
+        dist_u, u = heap.pop()
 
         for neighbor in graph.adjacent_nodes(u):
             weight = graph.w(u, neighbor)
             new_dist = dist_u + weight
 
-            # Only allow relaxation if under the k-limit
             if relax_count[neighbor] < k and new_dist < distance[neighbor]:
                 distance[neighbor] = new_dist
+                predecessor[neighbor] = u
                 relax_count[neighbor] += 1
-                new_path = path_u + [neighbor]
-                path[neighbor] = new_path
-                heap.push((new_dist, neighbor, new_path))
+                heap.push((new_dist, neighbor))
+
+    # Reconstruct paths from the predecessor dictionary
+    path = {}
+    for node in graph.adj:
+        if distance[node] == float('inf'):
+            path[node] = []  # No path
+        else:
+            # Reconstruct path from source to node
+            cur = node
+            rev_path = []
+            while cur is not None:
+                rev_path.append(cur)
+                cur = predecessor[cur]
+            path[node] = list(reversed(rev_path))
 
     return distance, path
+
 
 
 

@@ -24,9 +24,14 @@ class DirectedWeightedGraph:
         self.adj[node] = []
 
     def add_edge(self, node1, node2, weight):
+        if node1 not in self.adj:
+            self.add_node(node1)
+        if node2 not in self.adj:
+            self.add_node(node2)
         if node2 not in self.adj[node1]:
             self.adj[node1].append(node2)
         self.weights[(node1, node2)] = weight
+
 
     def w(self, node1, node2):
         if self.are_connected(node1, node2):
@@ -104,34 +109,45 @@ class MinHeap:
 # Dijkstra's with relaxation limit k
 def dijkstra(graph, source, k):
     distance = {}
-    path = {}
+    predecessor = {}
     relax_count = {}
 
     for node in graph.adj:
         distance[node] = float('inf')
-        path[node] = []
+        predecessor[node] = None
         relax_count[node] = 0
 
     distance[source] = 0
-    path[source] = [source]
 
     heap = MinHeap()
-    heap.push((0, source, [source]))
+    heap.push((0, source))
 
     while not heap.is_empty():
-        dist_u, u, path_u = heap.pop()
+        dist_u, u = heap.pop()
 
         for neighbor in graph.adjacent_nodes(u):
             weight = graph.w(u, neighbor)
             new_dist = dist_u + weight
 
-            # Only allow relaxation if under the k-limit
             if relax_count[neighbor] < k and new_dist < distance[neighbor]:
                 distance[neighbor] = new_dist
+                predecessor[neighbor] = u
                 relax_count[neighbor] += 1
-                new_path = path_u + [neighbor]
-                path[neighbor] = new_path
-                heap.push((new_dist, neighbor, new_path))
+                heap.push((new_dist, neighbor))
+
+    # Reconstruct paths from the predecessor dictionary
+    path = {}
+    for node in graph.adj:
+        if distance[node] == float('inf'):
+            path[node] = []  # No path
+        else:
+            # Reconstruct path from source to node
+            cur = node
+            rev_path = []
+            while cur is not None:
+                rev_path.append(cur)
+                cur = predecessor[cur]
+            path[node] = list(reversed(rev_path))
 
     return distance, path
 
@@ -163,6 +179,8 @@ def bellman_ford(graph, source, k):
             break
     
     return dist, paths
+
+
 
 
 
@@ -200,7 +218,7 @@ def all_pairs_dijkstra(graph, k):
 
     return all_distances, all_paths
 
-
+# All- paris shortest using Bellman-Ford
 def all_pairs_bf(graph, k):
     all_distances = {}
     all_paths = {}
@@ -248,115 +266,58 @@ for u in all_paths:
 
 
 
-
-
-
-
-
-
-
-
-
-#  EXPERIMENTS 
-
-# Test with variable nodes, fixed number of edges
-def experiment_variable_nodes_fixed_edges():
-    node_sizes = [10, 30, 50, 100, 200]
-    fixed_edges = 300
-
-    single_times = []
-    allpair_times = []
+def experiment_all_pairs_performance():
+    # Part 1: Varying nodes, fixed density
+    node_sizes = [10, 20, 30, 40, 50]
+    edge_density = 0.8
+    dijkstra_times = []
+    bellman_times = []
 
     for V in node_sizes:
-        G = generate_random_graph(V, fixed_edges)
-        
-        start = time.time()
-        dijkstra(G, 0, k=V-1)
-        end = time.time()
-        single_times.append((end - start) * 1000)
-
-        start = time.time()
-        all_pairs_dijkstra(G, k=V-1)
-        end = time.time()
-        allpair_times.append((end - start) * 1000)
-
-    plt.figure()
-    plt.plot(node_sizes, single_times, label="Single-Source", marker='o')
-    plt.plot(node_sizes, allpair_times, label="All-Pairs", marker='s')
-    plt.title("Variable Nodes, Fixed Edges ({} edges)".format(fixed_edges))
-    plt.xlabel("Number of Nodes")
-    plt.ylabel("Execution Time (ms)")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-# Test with variable edges, fixed number of nodes
-def experiment_variable_edges_fixed_nodes():
-    fixed_nodes = 100
-    edge_counts = [100, 500, 1000, 2000, 4000]
-
-    single_times = []
-    allpair_times = []
-
-    for E in edge_counts:
-        G = generate_random_graph(fixed_nodes, E)
-        
-        start = time.time()
-        dijkstra(G, 0, k=fixed_nodes-1)
-        end = time.time()
-        single_times.append((end - start) * 1000)
-
-        start = time.time()
-        all_pairs_dijkstra(G, k=fixed_nodes-1)
-        end = time.time()
-        allpair_times.append((end - start) * 1000)
-
-    plt.figure()
-    plt.plot(edge_counts, single_times, label="Single-Source", marker='o')
-    plt.plot(edge_counts, allpair_times, label="All-Pairs", marker='s')
-    plt.title("Variable Edges, Fixed Nodes ({} nodes)".format(fixed_nodes))
-    plt.xlabel("Number of Edges")
-    plt.ylabel("Execution Time (ms)")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-# Compare performance on small vs large graphs
-def experiment_small_vs_large_graphs():
-    configs = [
-        (10, 30),   # Small
-        (50, 500),  # Medium
-        (200, 2000) # Large
-    ]
-
-    labels = ["Small", "Medium", "Large"]
-    single_times = []
-    allpair_times = []
-
-    for V, E in configs:
+        max_edges = V * (V - 1)
+        E = int(edge_density * max_edges)
         G = generate_random_graph(V, E)
 
         start = time.time()
-        dijkstra(G, 0, k=V-1)
-        end = time.time()
-        single_times.append((end - start) * 1000)
+        all_pairs_dijkstra(G, k=V - 1)
+        dijkstra_times.append((time.time() - start) * 1000)
 
         start = time.time()
-        all_pairs_dijkstra(G, k=V-1)
-        end = time.time()
-        allpair_times.append((end - start) * 1000)
-
-    x = np.arange(len(labels))
-    width = 0.35
+        all_pairs_bf(G, k=V - 1)
+        bellman_times.append((time.time() - start) * 1000)
 
     plt.figure()
-    plt.bar(x - width/2, single_times, width, label='Single-Source')
-    plt.bar(x + width/2, allpair_times, width, label='All-Pairs')
+    plt.plot(node_sizes, dijkstra_times, marker='o', label='All-Pairs Dijkstra')
+    plt.plot(node_sizes, bellman_times, marker='s', label='All-Pairs Bellman-Ford')
+    plt.title("All-Pairs: Varying Nodes (80% Dense)")
+    plt.xlabel("Number of Nodes")
+    plt.ylabel("Execution Time (ms)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-    plt.xticks(x, labels)
-    plt.title("Small vs Medium vs Large Graphs")
+    # Part 2: Fixed nodes, varying edges
+    fixed_nodes = 50
+    edge_counts = [100, 500, 1000, 1500, 2000]
+    dijkstra_times = []
+    bellman_times = []
+
+    for E in edge_counts:
+        G = generate_random_graph(fixed_nodes, E)
+
+        start = time.time()
+        all_pairs_dijkstra(G, k=fixed_nodes - 1)
+        dijkstra_times.append((time.time() - start) * 1000)
+
+        start = time.time()
+        all_pairs_bf(G, k=fixed_nodes - 1)
+        bellman_times.append((time.time() - start) * 1000)
+
+    plt.figure()
+    plt.plot(edge_counts, dijkstra_times, marker='o', label='All-Pairs Dijkstra')
+    plt.plot(edge_counts, bellman_times, marker='s', label='All-Pairs Bellman-Ford')
+    plt.title("All-Pairs: Fixed Nodes (V=50), Varying Edges")
+    plt.xlabel("Number of Edges")
     plt.ylabel("Execution Time (ms)")
     plt.legend()
     plt.grid(True)
@@ -364,173 +325,8 @@ def experiment_small_vs_large_graphs():
 
 
 
-
-
-
-
-
-
-
-
-
-def experiment_accuracy_vs_k():
-    print("Running accuracy check against variable k")
-
-    V = 300
-    E = 1000
-    G = generate_random_graph(V, E)
-
-    source = 0
-    k_values = [0, 1, 2, 3, 5, 10, 20, 50, V - 1]
-    accuracies = []
-
-    # Baseline: k = V - 1
-    baseline_distances, _ = dijkstra(G, source, V - 1)
-
-    # Find all nodes that are reachable in the baseline
-    reachable_nodes = [node for node in G.adj if node != source and baseline_distances[node] != float('inf')]
-    total_reachable = len(reachable_nodes)
-    
-    
-    
-    if total_reachable == 0:
-        print(" No nodes are reachable from the source in the baseline run. Try increasing edge count.")
-        return
-
-    for k in k_values:
-        distances, _ = dijkstra(G, source, k)
-
-        correct = 0
-        for node in reachable_nodes:
-            if distances[node] == baseline_distances[node]:
-                correct += 1
-
-        accuracy = (correct / total_reachable) * 100 if total_reachable > 0 else 0
-        accuracies.append(accuracy)
-        print(f"k={k}: Accuracy = {accuracy:.2f}% (Correct={correct}, Reachable={total_reachable})")
-
-    # Plot
-    plt.figure()
-    plt.plot(k_values, accuracies, marker='^', color='green')
-    plt.title("Accuracy vs Relaxation Limit (k)")
-    plt.xlabel("k (Relaxation Limit)")
-    plt.ylabel("Accuracy (%)")
-    plt.ylim(0, 105)
-    plt.grid(True)
-    plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-def experiment_space_vs_nodes_fixed_edges():
-    
-    
-    
-    
-    print("Running space check for nodes vs fixed edges")
-    node_sizes = [10, 30, 50, 100, 200]
-    fixed_edges = 300
-    memory_usages = []
-
-    for V in node_sizes:
-        G = generate_random_graph(V, fixed_edges)
-
-        tracemalloc.start()
-        dijkstra(G, 0, k=V-1)
-        current, peak = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
-
-        memory_usages.append(peak / 1024)  # Convert to KB
-
-    plt.figure()
-    plt.plot(node_sizes, memory_usages, marker='o', color='purple')
-    plt.title("Memory Usage vs Nodes (Fixed {} Edges)".format(fixed_edges))
-    plt.xlabel("Number of Nodes")
-    plt.ylabel("Peak Memory Usage (KB)")
-    plt.grid(True)
-    plt.show()
-
-
-
-
-def experiment_space_vs_edges_fixed_nodes():
-    
-    
-    print("Running space check for edges vs fixed nodes")
-    fixed_nodes = 100
-    edge_counts = [100, 500, 1000, 2000, 4000]
-    memory_usages = []
-
-    for E in edge_counts:
-        G = generate_random_graph(fixed_nodes, E)
-
-        tracemalloc.start()
-        dijkstra(G, 0, k=fixed_nodes-1)
-        current, peak = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
-
-        memory_usages.append(peak / 1024)  # Convert to KB
-
-    plt.figure()
-    plt.plot(edge_counts, memory_usages, marker='s', color='brown')
-    plt.title("Memory Usage vs Edges (Fixed {} Nodes)".format(fixed_nodes))
-    plt.xlabel("Number of Edges")
-    plt.ylabel("Peak Memory Usage (KB)")
-    plt.grid(True)
-    plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Run all experiments
-experiment_variable_edges_fixed_nodes()
-experiment_small_vs_large_graphs()
-experiment_space_vs_nodes_fixed_edges()
-experiment_space_vs_edges_fixed_nodes()
-experiment_accuracy_vs_k()
-
+#All pairs performance 
+experiment_all_pairs_performance()
 """
 G = DirectedWeightedGraph()
 for i in range(5):
