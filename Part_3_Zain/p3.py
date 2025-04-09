@@ -12,50 +12,6 @@ sys.path.append(parent_dir)
 import Helper.graphs as graphs
 
 
-# MinHeap class with swim_up and sink_down to maximise the efficiency for dijikstras
-class MinHeap:
-    def __init__(self):
-        self.heap = []
-
-    def push(self, item):
-        self.heap.append(item)
-        self.swim_up(len(self.heap) - 1)
-
-    def pop(self):
-        if len(self.heap) == 0:
-            return None
-        self.swap(0, len(self.heap) - 1)
-        item = self.heap.pop()
-        self.sink_down(0)
-        return item
-
-    def is_empty(self):
-        return len(self.heap) == 0
-
-    def swim_up(self, index):
-        parent = (index - 1) // 2
-        while index > 0 and self.heap[index][0] < self.heap[parent][0]:
-            self.swap(index, parent)
-            index = parent
-            parent = (index - 1) // 2
-
-    def sink_down(self, index):
-        smallest = index
-        left = 2 * index + 1
-        right = 2 * index + 2
-
-        if left < len(self.heap) and self.heap[left][0] < self.heap[smallest][0]:
-            smallest = left
-        if right < len(self.heap) and self.heap[right][0] < self.heap[smallest][0]:
-            smallest = right
-
-        if smallest != index:
-            self.swap(index, smallest)
-            self.sink_down(smallest)
-
-    def swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
-
 # Dijkstra's with relaxation limit k
 def dijkstra(graph, source, k):
     distance = {}
@@ -69,7 +25,7 @@ def dijkstra(graph, source, k):
 
     distance[source] = 0
 
-    heap = MinHeap()
+    heap = graphs.MinHeap()
     heap.push((0, source))
 
     while not heap.is_empty():
