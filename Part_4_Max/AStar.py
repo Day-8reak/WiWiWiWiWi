@@ -6,6 +6,14 @@ import numpy as np
 import timeit
 import matplotlib.pyplot as plt
 import time
+import sys
+import os
+
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+
+import Helper.graphs as graphs
+
 
 """
 1. Implement a class for directed weighted graph
@@ -14,66 +22,6 @@ import time
 2. Implement a class for A* search algorithm
 - Uses priority queue to find lowest cost nodes
 """
-
-
-class DirectedWeightedGraph:
-
-    def __init__(self):
-        self.adj = {}
-        self.weights = {}
-
-    def are_connected(self, node1, node2):
-        for neighbour in self.adj[node1]:
-            if neighbour == node2:
-                return True
-        return False
-
-    def adjacent_nodes(self, node):
-        return self.adj[node]
-
-    def add_node(self, node):
-        self.adj[node] = []
-
-    def add_edge(self, node1, node2, weight):
-        if node2 not in self.adj[node1]:
-            self.adj[node1].append(node2)
-        self.weights[(node1, node2)] = weight
-
-    def w(self, node1, node2):
-        if self.are_connected(node1, node2):
-            return self.weights[(node1, node2)]
-
-    def number_of_nodes(self):
-        return len(self.adj)
-
-
-def generate_random_graph(num_nodes, num_edges, max_edge_weight=100, min_edge_weight=1):
-    #checking if the number of edges is valid
-    if num_edges > num_nodes * (num_nodes - 1):
-        raise ValueError("Too many edges for the given number of nodes.")
-
-    graph = DirectedWeightedGraph() # initialize the graph
-    for i in range(num_nodes):
-        graph.add_node(i)
-
-    edges_added = set() # tf does this do?
-
-    while len(edges_added) < num_edges:
-
-        node1, node2 = random.sample(range(num_nodes), 2)
-        # Ensure that the edge is not already added and is not a self-loop
-        if (node1, node2) not in edges_added:
-            weight = random.randint(min_edge_weight, max_edge_weight)  # Assign a random weight between 1 and 100
-            graph.add_edge(node1, node2, weight)
-            edges_added.add((node1, node2))
-        
-
-    return graph
-
-
-
-
-
 
 
 def heuristic_gen(G, source, destination, min, max): # for now we'll just use a random heuristic
@@ -106,7 +54,7 @@ def A_Star(graph, source, destination, heuristic):
         
         # If destination reached, reconstruct the path and return.
         if current == destination:
-            path = reconstruct_path(predecessors, source, destination)
+            path = graphs.reconstruct_path(predecessors, source, destination)
             return (predecessors, path)
         
         if current in closedSet:
@@ -127,29 +75,14 @@ def A_Star(graph, source, destination, heuristic):
     # If we get here, no path was found.
     return (predecessors, [])
 
-def reconstruct_path(predecessors, source, destination):
-    #helper function: reconstructs path from source to destination.
-    path = []
-    current = destination
-    while current is not None:
-        path.append(current)
-        current = predecessors[current]
-    path.reverse()
-    
-    # Check if the path starts with source; if not, no path was found.
-    if path[0] == source:
-        return path
-    return []
-
-
 
 def test_A_Star():
 
     for i in range(100):
-        graph = generate_random_graph(300, 100, 1000, 1)
+        graph = graphs.generate_random_graph(300, 100, 1000)
         heuristic = heuristic_gen(graph, 0, 4)
     # Create a random graph with 5 nodes and 10 edges
-    graph = generate_random_graph(5, 10, 100, 1)
+    graph = graphs.generate_random_graph(5, 10, 100)
     
     # Generate a random heuristic for the graph
     heuristic = heuristic_gen(graph, 0, 4)
@@ -161,6 +94,6 @@ def test_A_Star():
     print("Path from 0 to 4:", path)
     print("Graph nodes:", graph.adj.keys())
 
-test_graph = generate_random_graph(5, 10, 100, 1)
+test_graph = graphs.generate_random_graph(5, 10, 100)
 print("Graph nodes:", test_graph.adj.keys())
 print("Graph edges:", test_graph.weights.keys())

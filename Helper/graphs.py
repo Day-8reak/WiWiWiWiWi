@@ -96,3 +96,19 @@ class MinHeap:
 
     def swap(self, i, j):
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+
+
+
+def reconstruct_path(predecessors, source, destination):
+    #helper function: reconstructs path from source to destination.
+    path = []
+    current = destination
+    while current is not None:
+        path.append(current)
+        current = predecessors[current]
+    path.reverse()
+    
+    # Check if the path starts with source; if not, no path was found.
+    if path[0] == source:
+        return path
+    return []
