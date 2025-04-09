@@ -35,45 +35,42 @@ def heuristic_gen(G, source, destination, min, max): # for now we'll just use a 
 
 
     #Note: The heuristic "function" is just a dictionary of the nodes and their heuristic values
-def A_Star(graph, source, destination, heuristic):
-    openSet = []    # setting up priority queue
+def a_star(graph, source, destination, heuristic):
+    g_score = {node: float('inf') for node in graph.adj}
+    g_score[source] = 0
 
-    heapq.heappush(openSet, (heuristic[source], source))    # Each element in the queue is a tuple: (f_score, current_node)
-    
-    # Dictionaries to track the best cost (g score) and predeccesor for every node
-    gScore = {node: float('inf') for node in graph}
-    gScore[source] = 0 # source node set to 0
-    
-    predecessors = {node: None for node in graph} # setting all predecessors to None
-    
-    # set to keep track of processed nodes
-    closedSet = set()
-    
-    while openSet: # while there are nodes in the queue
-        current = heapq.heappop(openSet)
-        
-        # If destination reached, reconstruct the path and return.
+    predecessor = {node: None for node in graph.adj}
+
+    heap = []
+    heapq.heappush(heap, (heuristic[source], source))
+
+    closed = set()
+
+    while heap:
+        f_score, current = heapq.heappop(heap)
+
         if current == destination:
-            path = graphs.reconstruct_path(predecessors, source, destination)
-            return (predecessors, path)
-        
-        if current in closedSet:
+            # Reconstruct path
+            path = []
+            while current is not None:
+                path.append(current)
+                current = predecessor[current]
+            return predecessor , list(reversed(path))
+
+        if current in closed:
             continue
-        closedSet.add(current) # adding current node to closed set
-        
-        for n, w in graph[current].items(): # Check all the neighbors of current node
-            currentGScore = gScore[current] + w
-            
-            if currentGScore < gScore[n]:
-                # This path to neighbor is better than any previous one.
-                gScore[n] = currentGScore
-                predecessors[n] = current
-                # f = g + heuristic
-                fScore = currentGScore + heuristic.get(n, 0)
-                heapq.heappush(openSet, (fScore, n))
-                
-    # If we get here, no path was found.
-    return (predecessors, [])
+        closed.add(current)
+
+        for neighbor in graph.adjacent_nodes(current):
+            tentative_g = g_score[current] + graph.w(current, neighbor)
+
+            if tentative_g < g_score[neighbor]:
+                g_score[neighbor] = tentative_g
+                predecessor[neighbor] = current
+                f_score = tentative_g + heuristic.get(neighbor, float('inf'))
+                heapq.heappush(heap, (f_score, neighbor))
+
+    return {} , []  # No path found
 
 
 def test_A_Star():
