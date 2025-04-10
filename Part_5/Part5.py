@@ -86,6 +86,7 @@ def build_graph(stations, connections_file):
 
 
 def compute_heuristic(stations, source):
+    #Compute heuristic values for the stations using our distance 
     heuristic = {}
     lat1, lon1 = stations[source]['lat'], stations[source]['lon']
     for node, info in stations.items():
@@ -95,16 +96,20 @@ def compute_heuristic(stations, source):
 
 
 def a_star(graph, source, destination, heuristic):
+    
+    # An A* implementation which is similar in idea to the one we made in part 4 but more suited for this question. (Had to do some studying online)
     g_score = {node: float('inf') for node in graph.adj}
     g_score[source] = 0
 
     predecessor = {node: None for node in graph.adj}
-
+    #empty heap
     heap = []
     heapq.heappush(heap, (heuristic[source], source))
-
+    #set for already visted / completed nodes
     closed = set()
 
+    
+    #While loop  for the path reconstruction and adding nodes to closed
     while heap:
         f_score, current = heapq.heappop(heap)
 
@@ -120,6 +125,8 @@ def a_star(graph, source, destination, heuristic):
             continue
         closed.add(current)
 
+        #Checking every neighbour
+        
         for neighbor in graph.adjacent_nodes(current):
             tentative_g = g_score[current] + graph.w(current, neighbor)
 

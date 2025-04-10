@@ -10,7 +10,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 
 import Helper.graphs as graphs
-import Part_2_Colin.p2 as p2
+import Part_2.p2 as p2
 
 
 
@@ -93,7 +93,7 @@ for u in all_paths:
 
 
 def experiment_all_pairs_performance():
-    # Part 1: Varying nodes, fixed density
+    #Varying nodes, fixed density
     node_sizes = [10, 20, 30, 40, 50]
     edge_density = 0.8
     dijkstra_times = []
@@ -122,7 +122,7 @@ def experiment_all_pairs_performance():
     plt.grid(True)
     plt.show()
 
-    # Part 2: Fixed nodes, varying edges
+    # Fixed nodes, varying edges
     fixed_nodes = 50
     edge_counts = [100, 500, 1000, 1500, 2000]
     dijkstra_times = []
