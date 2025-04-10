@@ -60,17 +60,24 @@ def dijkstra(graph, source, k):
 
 
 def bellman_ford(graph, source, k):
+    
+    #Setting empty dictionaries for the distance, paths and relax_count
     dist = {}
     paths = {}
     relax_count = {}
 
+    #Traversing the neighbours and setting the distance as infinity and releax count as 0 
     for node in graph.adj:
         dist[node] = float('inf')
         paths[node] = []
         relax_count[node] = 0
 
+    #Setting our source distance to 0 and path to source as a loop . Source -> source essentially
     dist[source] = 0
     paths[source] = [source]
+    
+    #Our loop for the main function of finding shortest paths. We loop over the neighbours of the node until we find a shorter distance and update it.
+    
     
     for _ in range(len(graph.adj) - 1):
         updated = False
@@ -80,6 +87,7 @@ def bellman_ford(graph, source, k):
                 if dist[u] + weight < dist[v] and relax_count[v] < k:
                     dist[v] = dist[u] + weight
                     paths[v] = paths[u] + [v]
+                    #Relax count incremented with every relaxation to uphold the limit requirement
                     relax_count[v] += 1
                     updated = True
         if not updated:
