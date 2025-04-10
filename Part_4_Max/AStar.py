@@ -85,7 +85,7 @@ def test_A_Star():
     heuristic = heuristic_gen(graph, 0, 4)
     
     # Run A* algorithm from node 0 to node 4
-    predecessors, path = A_Star(graph, 0, 4, heuristic)
+    predecessors, path = a_star(graph, 0, 4, heuristic)
     
     print("Predecessors:", predecessors)
     print("Path from 0 to 4:", path)
