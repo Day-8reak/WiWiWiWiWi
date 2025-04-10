@@ -117,6 +117,58 @@ def experiment_variable_edges_fixed_nodes():
     plt.show()
 
 
+def experiment_variable_k_fixed_edges_nodes():
+    fixed_nodes = 100
+    fixed_edges = 2000
+    ks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    dijkstra_times = []
+    bf_times = []
+    dijkstra_times_k2 = []
+    bf_times_k2 = []
+
+    G = graphs.generate_random_graph(fixed_nodes, fixed_edges)
+
+    for k in ks:
+        
+        
+        # Dijkstra with k = V-1
+        start = time.perf_counter()
+        p2.dijkstra(G, 0, k=fixed_nodes-1)
+        end = time.perf_counter()
+        dijkstra_times.append((end - start) * 1000)
+
+        # Bellman-Ford with k = V-1
+        start = time.perf_counter()
+        p2.bellman_ford(G, 0, k=fixed_nodes-1)
+        end = time.perf_counter()
+        bf_times.append((end - start) * 1000)
+
+        # Dijkstra with k = 2
+        start = time.perf_counter()
+        p2.dijkstra(G, 0, k)
+        end = time.perf_counter()
+        dijkstra_times_k2.append((end - start) * 1000)
+
+        # Bellman-Ford with k = 2
+        start = time.perf_counter()
+        p2.bellman_ford(G, 0, k)
+        end = time.perf_counter()
+        bf_times_k2.append((end - start) * 1000)
+
+    # Plotting the results
+    plt.figure()
+    plt.plot(ks, dijkstra_times, label="Dijkstra (k = V-1)", marker='o')
+    plt.plot(ks, bf_times, label="Bellman-Ford (k = V-1)", marker='s')
+    plt.plot(ks, dijkstra_times_k2, label="Dijkstra (variable k)", marker='x')
+    plt.plot(ks, bf_times_k2, label="Bellman-Ford (variable k)", marker='^')
+    plt.title("Variable k, Fixed Edges ({} edges), Fixed Nodes ({} edges)".format(fixed_edges, fixed_nodes))
+    plt.xlabel("Relaxation limit")
+    plt.ylabel("Execution Time (ms)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 # Compare performance on small vs large graphs
 def experiment_small_vs_large_graphs():
     configs = [
@@ -181,8 +233,8 @@ def experiment_small_vs_large_graphs():
 def experiment_accuracy_vs_k():
     print("Running accuracy check against variable k")
 
-    V = 50
-    E = 500
+    V = 100
+    E = 2000
     G = graphs.generate_random_graph(V, E)
 
     source = 0
@@ -238,16 +290,6 @@ def experiment_accuracy_vs_k():
     plt.legend()
     plt.grid(True)
     plt.show()
-
-
-
-
-
-
-
-
-
-
 
 
 def experiment_space_vs_nodes_fixed_edges():
@@ -381,6 +423,7 @@ def experiment_space_vs_edges_fixed_nodes():
 
 
 # Run all experiments
+experiment_variable_k_fixed_edges_nodes()
 experiment_variable_nodes_fixed_edges()
 experiment_variable_edges_fixed_nodes()
 experiment_small_vs_large_graphs()

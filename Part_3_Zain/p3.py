@@ -10,84 +10,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 
 import Helper.graphs as graphs
-
-
-# Dijkstra's with relaxation limit k
-def dijkstra(graph, source, k):
-    distance = {}
-    predecessor = {}
-    relax_count = {}
-
-    for node in graph.adj:
-        distance[node] = float('inf')
-        predecessor[node] = None
-        relax_count[node] = 0
-
-    distance[source] = 0
-
-    heap = graphs.MinHeap()
-    heap.push((0, source))
-
-    while not heap.is_empty():
-        dist_u, u = heap.pop()
-
-        for neighbor in graph.adjacent_nodes(u):
-            weight = graph.w(u, neighbor)
-            new_dist = dist_u + weight
-
-            if relax_count[neighbor] < k and new_dist < distance[neighbor]:
-                distance[neighbor] = new_dist
-                predecessor[neighbor] = u
-                relax_count[neighbor] += 1
-                heap.push((new_dist, neighbor))
-
-    # Reconstruct paths from the predecessor dictionary
-    path = {}
-    for node in graph.adj:
-        if distance[node] == float('inf'):
-            path[node] = []  # No path
-        else:
-            # Reconstruct path from source to node
-            cur = node
-            rev_path = []
-            while cur is not None:
-                rev_path.append(cur)
-                cur = predecessor[cur]
-            path[node] = list(reversed(rev_path))
-
-    return distance, path
-
-
-def bellman_ford(graph, source, k):
-    dist = {}
-    paths = {}
-    relax_count = {}
-
-    for node in graph.adj:
-        dist[node] = float('inf')
-        paths[node] = []
-        relax_count[node] = 0
-
-    dist[source] = 0
-    paths[source] = [source]
-    
-    for _ in range(len(graph.adj) - 1):
-        updated = False
-        for u in graph.adj:
-            for v in graph.adj[u]:
-                weight = graph.w(u, v)
-                if dist[u] + weight < dist[v] and relax_count[v] < k:
-                    dist[v] = dist[u] + weight
-                    paths[v] = paths[u] + [v]
-                    relax_count[v] += 1
-                    updated = True
-        if not updated:
-            break
-    
-    return dist, paths
-
-
-
+import Part_2_Colin.p2 as p2
 
 
 
@@ -102,13 +25,10 @@ G.add_edge(2, 1, 2)
 G.add_edge(1, 3, 1)
 G.add_edge(2, 3, 5)
 
-distances, paths = dijkstra(G, 0, 2)
+distances, paths = p2.dijkstra(G, 0, 2)
 
 print("Distances:", distances)
 print("Paths:", paths)
-
-
-
 
 
 
@@ -118,7 +38,7 @@ def all_pairs_dijkstra(graph, k):
     all_paths = {}
 
     for source in graph.adj:
-        distances, paths = dijkstra(graph, source, k)
+        distances, paths = p2.dijkstra(graph, source, k)
         all_distances[source] = distances
         all_paths[source] = paths
 
@@ -130,7 +50,7 @@ def all_pairs_bf(graph, k):
     all_paths = {}
 
     for source in graph.adj:
-        distances, paths = bellman_ford(graph, source, k)
+        distances, paths = p2.bellman_ford(graph, source, k)
         all_distances[source] = distances
         all_paths[source] = paths
 
